@@ -3,131 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YearLoop // Tu Ciclo Anual</title>
+    <title>YearLoop // Ramón Morillo</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         body { 
-            background: #09090b; 
-            color: #fafafa; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #050505; 
+            color: #e2e8f0; 
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.01em;
         }
-        .glass { 
-            background: rgba(24, 24, 27, 0.8); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
+        .glass-card { 
+            background: rgba(15, 15, 20, 0.6); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .done { text-decoration: line-through; opacity: 0.4; filter: grayscale(100%); }
-        .accent-gradient {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+        .glass-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-4px);
+            background: rgba(20, 20, 25, 0.8);
+        }
+        .done { text-decoration: line-through; opacity: 0.3; }
+        .bg-mesh {
+            background-image: radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0, transparent 50%), 
+                              radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0, transparent 50%);
         }
     </style>
 </head>
-<body class="p-6 md:p-12">
-    <div class="max-w-6xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
-            <div>
-                <div class="inline-block px-3 py-1 rounded-full text-xs font-bold accent-gradient mb-3">2026 ESTRATEGIA</div>
-                <h1 class="text-5xl font-extrabold tracking-tight">Year<span class="text-indigo-500">Loop</span></h1>
-                <p class="text-slate-400 mt-2 text-lg">Define, ejecuta y completa tu ciclo anual.</p>
-            </div>
-            
-            <div class="flex gap-3">
-                <button onclick="exportData()" class="glass px-4 py-2 rounded-xl text-sm hover:bg-white/5 transition-all">
-                    📥 Backup
-                </button>
-                <label class="glass px-4 py-2 rounded-xl text-sm hover:bg-white/5 transition-all cursor-pointer">
-                    📤 Importar
-                    <input type="file" id="importFile" class="hidden" onchange="importData(event)">
-                </label>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="quarter-container"></div>
-    </div>
-
-    <script>
-        let data = JSON.parse(localStorage.getItem('yearloop_data')) || {
-            1: [], 2: [], 3: [], 4: []
-        };
-
-        const quartersInfo = [
-            { id: 1, name: 'Q1 · Cimientos', color: 'indigo-500' },
-            { id: 2, name: 'Q2 · Acción', color: 'purple-500' },
-            { id: 3, name: 'Q3 · Impacto', color: 'pink-500' },
-            { id: 4, name: 'Q4 · Resultados', color: 'rose-500' }
-        ];
-
-        function render() {
-            const container = document.getElementById('quarter-container');
-            container.innerHTML = '';
-            localStorage.setItem('yearloop_data', JSON.stringify(data));
-
-            quartersInfo.forEach(q => {
-                const div = document.createElement('div');
-                div.className = `glass p-6 rounded-3xl border-t-2 border-${q.color} flex flex-col min-h-[350px]`;
-                
-                let tasksHtml = data[q.id].map((task, index) => `
-                    <div class="flex flex-col bg-white/5 p-3 rounded-2xl mb-3 group border border-white/5 hover:border-white/20 transition-all cursor-pointer" onclick="toggleTask(${q.id}, ${index})">
-                        <div class="flex justify-between items-start">
-                            <span class="text-sm font-medium ${task.completed ? 'done' : ''}">${task.text}</span>
-                            <button onclick="event.stopPropagation(); deleteTask(${q.id}, ${index})" class="text-slate-600 hover:text-red-400 text-lg leading-none">×</button>
-                        </div>
-                        ${task.date ? `<span class="text-[10px] mt-2 font-bold uppercase tracking-wider text-${q.color}">${task.date}</span>` : ''}
-                    </div>
-                `).join('');
-
-                div.innerHTML = `
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-bold text-xl">${q.name}</h3>
-                        <span class="text-xs font-mono text-slate-500">${data[q.id].length}</span>
-                    </div>
-                    <div class="flex-grow">${tasksHtml || '<p class="text-xs text-slate-600 italic text-center my-8">Sin planes aún</p>'}</div>
-                    <button onclick="addTask(${q.id})" class="mt-4 w-full py-3 rounded-2xl bg-white text-black font-bold text-xs hover:bg-slate-200 transition-colors uppercase tracking-widest">
-                        + Añadir Ítem
-                    </button>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function addTask(qId) {
-            const text = prompt("¿Qué quieres lograr?");
-            if (!text) return;
-            const date = prompt("Hito temporal (ej. Finales de Marzo):");
-            data[qId].push({ text, date, completed: false });
-            render();
-        }
-
-        function toggleTask(qId, index) {
-            data[qId][index].completed = !data[qId][index].completed;
-            render();
-        }
-
-        function deleteTask(qId, index) {
-            data[qId].splice(index, 1);
-            render();
-        }
-
-        function exportData() {
-            const dataStr = JSON.stringify(data);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', 'yearloop-backup.json');
-            linkElement.click();
-        }
-
-        function importData(event) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                data = JSON.parse(e.target.result);
-                render();
-            };
-            reader.readAsText(event.target.files[0]);
-        }
-
-        render();
-    </script>
-</body>
-</html>
+<body class="bg-mesh min-h-screen flex flex-col p-6 md:p-12">
+    <div class="max-w-7xl mx-auto w-full flex-grow">
+        <nav class="flex justify-between items-center mb-16">
+            <div class="flex items-center gap-3">
+                <div class="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 animate-pulse"></div>
+                <h1 class="text-2xl font
