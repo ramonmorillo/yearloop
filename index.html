@@ -5,35 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YearLoop // Ramón Morillo</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { 
-            background-color: #050505; 
-            color: #e2e8f0; 
-            font-family: 'Inter', sans-serif;
-            letter-spacing: -0.01em;
-        }
-        .glass-card { 
-            background: rgba(15, 15, 20, 0.6); 
-            backdrop-filter: blur(20px); 
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .glass-card:hover {
-            border-color: rgba(99, 102, 241, 0.4);
-            transform: translateY(-4px);
-            background: rgba(20, 20, 25, 0.8);
-        }
+        body { background-color: #050505; color: #e2e8f0; font-family: sans-serif; }
+        .glass-card { background: rgba(20, 20, 25, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); }
         .done { text-decoration: line-through; opacity: 0.3; }
-        .bg-mesh {
-            background-image: radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0, transparent 50%), 
-                              radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0, transparent 50%);
-        }
     </style>
 </head>
-<body class="bg-mesh min-h-screen flex flex-col p-6 md:p-12">
-    <div class="max-w-7xl mx-auto w-full flex-grow">
+<body class="min-h-screen p-6 md:p-12">
+    <div class="max-w-7xl mx-auto w-full">
         <nav class="flex justify-between items-center mb-16">
             <div class="flex items-center gap-3">
-                <div class="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 animate-pulse"></div>
-                <h1 class="text-2xl font
+                <div class="h-6 w-6 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500"></div>
+                <h1 class="text-2xl font-bold tracking-tighter">Year<span class="text-indigo-400">Loop</span></h1>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="exportData()" class="text-[10px] uppercase tracking-widest text-slate-400 hover:text-white">Backup</button>
+            </div>
+        </nav>
+
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold mb-2">Define tu año.</h2>
+            <p class="text-slate-500">Planificación estratégica por trimestres.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="main-grid"></div>
+    </div>
+
+    <footer class="mt-20 text-center border-t border-white/5 pt-8 pb-10">
+        <p class="text-[10px] uppercase tracking-[0.3em] text-slate-600">
+            Creado por <span class="text-slate-400 font-bold">Ramón Morillo</span> • Febrero-2026
+        </p>
+    </footer>
+
+    <script>
+        // Datos iniciales
+        let data = JSON.parse(localStorage.getItem('yearloop_final')) || { 1: [], 2: [], 3: [], 4: [] };
+        
+        const qs = [
+            { id: 1, title: 'Q1 · Cimientos', color: 'indigo-400' },
+            { id: 2, title: 'Q2 · Impulso', color: 'blue-400' },
+            { id: 3, title: 'Q3 · Impacto', color: 'fuchsia-400' },
+            { id: 4, title: 'Q4 · Cierre', color: 'rose-400' }
+        ];
+
+        function render() {
+            const grid = document.getElementById('main-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            localStorage.setItem('yearloop_final', JSON.stringify(data));
+
+            qs.forEach(q => {
+                const tasksHtml = data[q.id].map((t, i) => `
+                    <div class="flex justify-between items-start bg-white/5 p-3 rounded-xl group mb-2">
+                        <span onclick="toggle(${q.id}, ${i})" class="text-sm cursor-pointer ${t.done ? 'done' : ''}">${t.text}</span>
+                        <button onclick="del(${q.id}, ${i})" class="text-slate-600 hover:text-red-400 ml-2">×</button>
+                    </div>
+                `).join('');
+
+                grid.innerHTML += `
+                    <div class="glass-card rounded-[2rem] p-6 flex flex-col">
+                        <h3 class="font-bold text-lg mb-6 text-${q.color}">${q.title}</h3>
+                        <div class="flex-grow">${tasksHtml || '<p class="text-[10px] text-slate-700 italic">Vacio</p>'}</div>
+                        <button onclick="add(${q.id})" class="mt-6 py-2 rounded-xl border border-white/10 text-[10px] uppercase font-bold hover:bg-white hover:text-black transition-all">
+                            + Añadir
+                        </button>
+                    </div>`;
+            });
+        }
+
+        function add(id) {
+            const t = prompt("¿Qué quieres lograr?");
+            if (t) { data[id].push({ text: t, done: false }); render(); }
+        }
+        function toggle(id, i) { data[id][i].done = !data[id][i].done; render(); }
+        function del(id, i) { if(confirm("¿Eliminar?")) { data[id].splice(i, 1); render(); } }
+        function exportData() {
+            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click();
+        }
+
+        // Arrancar la App
+        render();
+    </script>
+</body>
+</html>
