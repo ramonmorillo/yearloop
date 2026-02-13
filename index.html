@@ -1,102 +1,175 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YearLoop Pro // Ramón Morillo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #050505; color: #e2e8f0; font-family: ui-sans-serif, system-ui, sans-serif; }
-        .glass-card { background: rgba(18, 18, 23, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); }
-        .done { text-decoration: line-through; opacity: 0.3; filter: grayscale(100%); }
-        .date-badge { background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.2); }
-        .link-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        /* CSS INTERNO: No depende de conexiones externas */
+        :root {
+            --bg: #050505;
+            --card: #121217;
+            --accent: #10b981;
+            --text: #e2e8f0;
+            --q1: #818cf8; --q2: #60a5fa; --q3: #10b981; --q4: #fb7185;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-h-screen;
+        }
+
+        .container { max-width: 1200px; w-full: 100%; width: 100%; }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px; }
+        
+        .logo { font-size: 24px; font-weight: 900; letter-spacing: -1px; italic: italic; }
+        .logo span { color: var(--accent); }
+
+        .hero { text-align: center; margin-bottom: 60px; }
+        .hero h2 { font-size: 42px; margin-bottom: 10px; letter-spacing: -1px; }
+        .hero p { color: #64748b; font-size: 18px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .glass-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 30px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        h3 { font-size: 12px; uppercase: uppercase; letter-spacing: 2px; margin-bottom: 25px; border-bottom: 2px solid; padding-bottom: 10px; display: inline-block; }
+        
+        .q1 h3 { color: var(--q1); border-color: var(--q1); }
+        .q2 h3 { color: var(--q2); border-color: var(--q2); }
+        .q3 h3 { color: var(--q3); border-color: var(--q3); }
+        .q4 h3 { color: var(--q4); border-color: var(--q4); }
+
+        .task {
+            background: rgba(255,255,255,0.03);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .task-text { font-size: 14px; font-weight: 600; cursor: pointer; display: block; margin-bottom: 8px; }
+        .done { text-decoration: line-through; opacity: 0.3; }
+
+        .badge {
+            font-size: 9px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 5px;
+            background: rgba(129, 140, 248, 0.1);
+            color: var(--q1);
+            text-transform: uppercase;
+        }
+
+        button.add-btn {
+            margin-top: auto;
+            background: white;
+            color: black;
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: 900;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button.add-btn:hover { background: var(--accent); color: white; transform: scale(1.02); }
+
+        footer { margin-top: 80px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px; width: 100%; }
+        footer p { font-size: 10px; letter-spacing: 4px; color: #475569; text-transform: uppercase; }
+
+        .export-btn { background: none; border: 1px solid #334155; color: #64748b; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 10px; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
-<body class="min-h-screen p-6 md:p-12 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900 via-black to-black">
-    <div class="max-w-7xl mx-auto w-full">
-        <nav class="flex justify-between items-center mb-16">
-            <div class="flex items-center gap-3">
-                <div class="h-6 w-6 rounded-full bg-gradient-to-tr from-indigo-500 to-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]"></div>
-                <h1 class="text-2xl font-black tracking-tighter italic text-white">Year<span class="text-emerald-400">Loop</span><span class="text-[10px] ml-1 text-slate-500 uppercase font-bold tracking-widest">Pro</span></h1>
-            </div>
-            <button onclick="exportData()" class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 hover:text-white transition-all">Exportar Datos</button>
-        </nav>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo italic">Year<span>Loop</span>Pro</div>
+            <button class="export-btn" onclick="exportData()">Exportar Datos</button>
+        </header>
 
-        <div class="text-center mb-16">
-            <h2 class="text-5xl font-extrabold mb-3 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">Gestión de Objetivos.</h2>
-            <p class="text-slate-500 text-lg">Centraliza tus planes, fechas y documentos de 2026.</p>
+        <div class="hero">
+            <h2>Gestión de Objetivos.</h2>
+            <p>Tu plan estratégico para 2026.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="main-grid"></div>
+        <div class="grid" id="main-grid"></div>
     </div>
 
-    <footer class="mt-24 text-center border-t border-white/5 pt-10 pb-12">
-        <p class="text-[10px] uppercase tracking-[0.4em] text-slate-600">
-            System Architecture by <span class="text-emerald-400 font-bold uppercase">Ramón Morillo</span> • 2026
-        </p>
+    <footer>
+        <p>System Architecture by <b>Ramón Morillo</b> • 2026</p>
     </footer>
 
     <script>
-        let data = JSON.parse(localStorage.getItem('yearloop_pro_v1')) || { 1: [], 2: [], 3: [], 4: [] };
+        let data = JSON.parse(localStorage.getItem('yearloop_final_v3')) || { 1: [], 2: [], 3: [], 4: [] };
         
         const qs = [
-            { id: 1, title: 'Q1 · Cimientos', color: 'indigo-400' },
-            { id: 2, title: 'Q2 · Impulso', color: 'blue-400' },
-            { id: 3, title: 'Q3 · Impacto', color: 'emerald-400' },
-            { id: 4, title: 'Q4 · Cierre', color: 'rose-400' }
+            { id: 1, title: 'Q1 · Cimientos', class: 'q1' },
+            { id: 2, title: 'Q2 · Impulso', class: 'q2' },
+            { id: 3, title: 'Q3 · Impacto', class: 'q3' },
+            { id: 4, title: 'Q4 · Cierre', class: 'q4' }
         ];
 
         function render() {
             const grid = document.getElementById('main-grid');
             grid.innerHTML = '';
-            localStorage.setItem('yearloop_pro_v1', JSON.stringify(data));
+            localStorage.setItem('yearloop_final_v3', JSON.stringify(data));
 
             qs.forEach(q => {
                 const tasksHtml = data[q.id].map((t, i) => `
-                    <div class="bg-white/[0.03] p-5 rounded-2xl border border-white/5 group hover:bg-white/[0.06] transition-all mb-4">
-                        <div class="flex justify-between items-start mb-3">
-                            <span onclick="toggle(${q.id}, ${i})" class="text-sm font-semibold cursor-pointer leading-snug ${t.done ? 'done' : 'text-slate-200'}">${t.text}</span>
-                            <button onclick="del(${q.id}, ${i})" class="text-slate-700 hover:text-red-400 transition-colors ml-2 text-xl">&times;</button>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            ${t.date ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase date-badge">${t.date}</span>` : ''}
-                            ${t.link ? `<a href="${t.link}" target="_blank" class="px-2 py-0.5 rounded text-[9px] font-bold uppercase link-badge hover:bg-emerald-500 hover:text-white transition-all">📎 Doc</a>` : ''}
-                        </div>
+                    <div class="task">
+                        <span onclick="toggle(${q.id}, ${i})" class="task-text ${t.done ? 'done' : ''}">${t.text}</span>
+                        ${t.date ? `<span class="badge">${t.date}</span>` : ''}
+                        <button onclick="del(${q.id}, ${i})" style="float:right; background:none; border:none; color:#475569; cursor:pointer;">×</button>
                     </div>
                 `).join('');
 
                 grid.innerHTML += `
-                    <div class="glass-card rounded-[2.5rem] p-7 flex flex-col shadow-2xl transition-all hover:border-white/10">
-                        <h3 class="font-black text-xs uppercase tracking-[0.2em] mb-6 text-${q.color}">${q.title}</h3>
-                        <div class="flex-grow">${tasksHtml || '<p class="text-[10px] text-slate-700 italic text-center py-4">Bandeja de entrada vacía</p>'}</div>
-                        <button onclick="add(${q.id})" class="mt-8 py-4 rounded-2xl bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] hover:bg-${q.color} hover:text-white transition-all transform active:scale-95">
-                            + Agendar Ítem
-                        </button>
+                    <div class="glass-card ${q.class}">
+                        <h3>${q.title}</h3>
+                        <div style="flex-grow:1">${tasksHtml || '<p style="font-size:10px; color:#334155; text-align:center;">Vació</p>'}</div>
+                        <button class="add-btn" onclick="add(${id=q.id})">+ Agendar Ítem</button>
                     </div>`;
             });
         }
 
         function add(id) {
-            const text = prompt("1. ¿Cuál es el objetivo?");
-            if (!text) return;
-            const date = prompt("2. ¿Fecha límite? (ej. 20 Marzo):");
-            const link = prompt("3. Link a PDF/Word/Drive (opcional):");
-            
-            data[id].push({ text, date: date || '', link: link || '', done: false });
+            const t = prompt("¿Qué quieres lograr?");
+            if (!t) return;
+            const d = prompt("¿Para cuándo?");
+            data[id].push({ text: t, date: d || '', done: false });
             render();
         }
 
         function toggle(id, i) { data[id][i].done = !data[id][i].done; render(); }
         function del(id, i) { if(confirm("¿Eliminar?")) { data[id].splice(i, 1); render(); } }
-        
         function exportData() {
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `yearloop-backup.json`;
-            a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'yearloop-backup.json'; a.click();
         }
 
         render();
