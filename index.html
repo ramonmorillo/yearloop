@@ -1,154 +1,46 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YearLoop Control // Ramón Morillo</title>
-    <style>
-        :root {
-            --bg: #0a0a0c;
-            --card: #16161a;
-            --text: #f8fafc;
-            --accent: #10b981;
-            --pending: #475569;
-            --doing: #f59e0b;
-            --done: #10b981;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0; padding: 20px;
-            display: flex; flex-direction: column; align-items: center;
-        }
-
-        .header-panel { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #2d2d35; padding-bottom: 20px; }
-        
-        .status-legend { display: flex; gap: 15px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
-        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px; width: 100%; max-width: 1200px;
-        }
-
-        .q-card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #2d2d35;
-            display: flex; flex-direction: column;
-        }
-
-        .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .q-title { font-weight: 800; font-size: 14px; color: var(--accent); }
-
-        .item {
-            background: #1f1f24;
-            margin-bottom: 10px;
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 4px solid var(--pending);
-            position: relative;
-        }
-
-        .item.status-1 { border-left-color: var(--doing); }
-        .item.status-2 { border-left-color: var(--done); opacity: 0.7; }
-
-        .item-title { font-size: 13px; font-weight: 600; display: block; margin-bottom: 5px; }
-        .item-meta { font-size: 10px; color: #94a3b8; display: flex; gap: 10px; }
-        
-        .btn-doc { color: var(--accent); text-decoration: none; font-weight: bold; }
-        .btn-doc:hover { text-decoration: underline; }
-
-        .controls { margin-top: 15px; display: flex; gap: 5px; }
-        .btn-small { background: #2d2d35; border: none; color: white; font-size: 9px; padding: 5px 8px; border-radius: 4px; cursor: pointer; }
-        .btn-add { background: var(--accent); color: white; width: 100%; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
-        footer { margin-top: 50px; font-size: 10px; color: #475569; letter-spacing: 2px; }
-    </style>
-</head>
-<body>
-
-    <div class="header-panel">
-        <div>
-            <div style="font-weight: 900; font-size: 20px;">YearLoop <span style="color:var(--accent)">Control</span></div>
-            <div style="font-size: 12px; color: #64748b;">Panel de Objetivos 2026</div>
+<div class="guide-section">
+        <div class="guide-grid">
+            <div class="guide-item">
+                <h4>📊 Calendario de Objetivos</h4>
+                <p>Visualiza tus metas por trimestres. Usa el botón "Cambiar Estado" para pasar de <b>Pendiente</b> a <b>En Proceso</b> o <b>Cerrado</b>, permitiendo un seguimiento visual del progreso anual.</p>
+            </div>
+            <div class="guide-item">
+                <h4>📂 Gestor Documental</h4>
+                <p>Vincula procedimientos y evidencias directamente. Al añadir un ítem, puedes incluir el enlace a la ubicación del archivo y registrar la <b>versión actual</b> para un control de cambios riguroso.</p>
+            </div>
+            <div class="guide-item">
+                <h4>💾 Seguridad de Datos</h4>
+                <p>La información se guarda automáticamente en tu navegador. Usa el botón <b>Exportar Datos</b> al finalizar tu jornada para generar una copia de seguridad que podrás importar en cualquier momento.</p>
+            </div>
         </div>
-        <div class="status-legend">
-            <span><span class="dot" style="background:var(--pending)"></span> Pendiente</span>
-            <span><span class="dot" style="background:var(--doing)"></span> En Proceso</span>
-            <span><span class="dot" style="background:var(--done)"></span> Cerrado</span>
-        </div>
-        <button class="btn-small" onclick="exportData()">💾 Backup Excel (JSON)</button>
     </div>
 
-    <div class="grid" id="main-grid"></div>
-
-    <footer>SISTEMA DISEÑADO POR RAMÓN MORILLO PARA GÓMEZ LLUCH, M. TERESA</footer>
-
-    <script>
-        let data = JSON.parse(localStorage.getItem('yearloop_control_v1')) || { 1: [], 2: [], 3: [], 4: [] };
-        
-        function render() {
-            const grid = document.getElementById('main-grid');
-            grid.innerHTML = '';
-            localStorage.setItem('yearloop_control_v1', JSON.stringify(data));
-
-            for (let q = 1; q <= 4; q++) {
-                const itemsHtml = data[q].map((item, i) => `
-                    <div class="item status-${item.status}">
-                        <span class="item-title">${item.text}</span>
-                        <div class="item-meta">
-                            <span>📅 ${item.date || 'Sin fecha'}</span>
-                            ${item.link ? `<a href="${item.link}" target="_blank" class="btn-doc">📎 DOC v.${item.ver || '1.0'}</a>` : ''}
-                        </div>
-                        <div class="controls">
-                            <button class="btn-small" onclick="updateStatus(${q}, ${i})">🔄 Cambiar Estado</button>
-                            <button class="btn-small" style="color:#ef4444" onclick="del(${q}, ${i})">Eliminar</button>
-                        </div>
-                    </div>
-                `).join('');
-
-                grid.innerHTML += `
-                    <div class="q-card">
-                        <div class="q-header">
-                            <span class="q-title">TRIMESTRE 0${q}</span>
-                        </div>
-                        <div style="flex-grow:1">${itemsHtml || '<p style="font-size:11px; color:#475569; text-align:center;">No hay objetivos</p>'}</div>
-                        <button class="btn-add" onclick="addItem(${q})">+ Nuevo Objetivo / Documento</button>
-                    </div>
-                `;
-            }
-        }
-
-        function addItem(q) {
-            const text = prompt("Nombre del objetivo o procedimiento:");
-            if (!text) return;
-            const date = prompt("Fecha límite o revisión:");
-            const link = prompt("Enlace al documento (Drive/Sharepoint):");
-            const ver = link ? prompt("Versión del documento (ej: 1.2):") : "";
-            
-            data[q].push({ text, date, link, ver, status: 0 });
-            render();
-        }
-
-        function updateStatus(q, i) {
-            data[q][i].status = (data[q][i].status + 1) % 3;
-            render();
-        }
-
-        function del(q, i) { if(confirm("¿Eliminar registro?")) { data[q].splice(i, 1); render(); } }
-        
-        function exportData() {
-            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = 'control-objetivos-2026.json'; a.click();
-        }
-
-        render();
-    </script>
-</body>
-</html>
+<style>
+    /* Añade este estilo extra para la guía */
+    .guide-section {
+        width: 100%;
+        max-width: 1200px;
+        margin-top: 60px;
+        padding: 30px;
+        background: #111115;
+        border-radius: 20px;
+        border: 1px dashed #2d2d35;
+    }
+    .guide-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+    }
+    .guide-item h4 {
+        color: var(--accent);
+        margin-top: 0;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+    .guide-item p {
+        font-size: 12px;
+        color: #94a3b8;
+        line-height: 1.6;
+        margin-bottom: 0;
+    }
+</style>
