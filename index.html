@@ -3,71 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Objetivos 2026</title>
+    <title>YearLoop Pro // Panel de Gestión</title>
     <style>
-        :root { --bg: #0a0a0c; --card: #16161a; --accent: #10b981; --text: #f8fafc; --pending: #475569; --doing: #f59e0b; --done: #10b981; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 1200px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d2d35; padding-bottom: 20px; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .q-card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #2d2d35; min-height: 300px; display: flex; flex-direction: column; }
-        .q-title { color: var(--accent); font-weight: bold; margin-bottom: 20px; text-transform: uppercase; font-size: 14px; }
-        .item { background: #1f1f24; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--pending); }
-        .item.s1 { border-left-color: var(--doing); }
-        .item.s2 { border-left-color: var(--done); opacity: 0.8; }
-        .item-t { font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; }
-        .item-m { font-size: 10px; color: #94a3b8; }
-        .btn-add { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: auto; }
-        .btn-s { background: #2d2d35; border: none; color: white; font-size: 9px; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 8px; }
-        .guide { background: #111115; border: 1px dashed #2d2d35; padding: 20px; border-radius: 15px; margin-top: 40px; }
-        .guide h4 { color: var(--accent); font-size: 13px; margin: 0 0 10px 0; }
-        .guide p { font-size: 11px; color: #94a3b8; margin: 0; line-height: 1.5; }
+        :root {
+            --bg: #050505;
+            --card: rgba(23, 23, 27, 0.8);
+            --accent: #10b981;
+            --text: #f8fafc;
+            --p-high: #ef4444;
+            --p-mid: #f59e0b;
+            --p-low: #3b82f6;
+            --done: #10b981;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% -20%, #1e1e2d 0%, #050505 80%);
+            color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+        }
+
+        .container { width: 100%; max-width: 1300px; }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 30px 0; margin-bottom: 20px;
+        }
+
+        .logo { font-size: 22px; font-weight: 900; letter-spacing: -0.05em; }
+        .logo span { color: var(--accent); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px; margin-bottom: 50px;
+        }
+
+        .q-card {
+            background: var(--card);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 24px;
+            display: flex; flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .q-card:hover { border-color: rgba(16, 185, 129, 0.3); }
+
+        .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .q-name { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; }
+        
+        /* Barra de Progreso */
+        .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s ease; box-shadow: 0 0 10px var(--accent); }
+
+        .item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 16px; margin-bottom: 12px;
+            position: relative; transition: all 0.2s;
+        }
+
+        .item.status-done { opacity: 0.5; border-color: var(--accent); background: rgba(16, 185, 129, 0.02); }
+        
+        .priority-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+
+        .item-t { font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; cursor: pointer; }
+        .item-m { font-size: 10px; color: #64748b; display: flex; gap: 12px; align-items: center; }
+        
+        .tag { padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+
+        .btn-add {
+            background: #fff; color: #000; border: none; padding: 14px;
+            border-radius: 14px; font-weight: 700; font-size: 12px;
+            text-transform: uppercase; cursor: pointer; margin-top: auto;
+            transition: all 0.2s;
+        }
+        .btn-add:hover { background: var(--accent); color: white; transform: translateY(-2px); }
+
+        .controls { margin-top: 12px; display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+        .btn-action { background: none; border: none; color: #475569; font-size: 10px; font-weight: bold; cursor: pointer; padding: 0; }
+        .btn-action:hover { color: var(--text); }
+
+        .guide-box {
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px; padding: 30px; margin-top: 40px; display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;
+        }
+        .guide-box h4 { font-size: 12px; color: var(--accent); margin-bottom: 10px; text-transform: uppercase; }
+        .guide-box p { font-size: 11px; color: #64748b; line-height: 1.6; margin: 0; }
+
+        footer { padding: 40px 0; text-align: center; font-size: 10px; color: #334155; letter-spacing: 0.2em; text-transform: uppercase; }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <div class="header">
-            <div><b style="font-size:20px">YearLoop Control</b><br><small style="color:#64748b">Gestión Estratégica 2026</small></div>
-            <button class="btn-s" onclick="exportData()">💾 Guardar Backup</button>
-        </div>
+        <header>
+            <div class="logo">YEAR<span>LOOP</span> PRO</div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-action" onclick="exportData()" style="border:1px solid #334155; padding:8px 15px; border-radius:8px;">Exportar Backup</button>
+            </div>
+        </header>
+
         <div class="grid" id="main-grid"></div>
-        <div class="guide">
-            <h4>📖 Guía de Uso para Ma Teresa</h4>
-            <p>1. <b>Añadir:</b> Crea objetivos o registra procedimientos y evidencias.<br>
-            2. <b>Estados:</b> Gris (Pendiente), Naranja (En Proceso), Verde (Cerrado).<br>
-            3. <b>Documentos:</b> Vincula enlaces y controla la versión del archivo.</p>
+
+        <div class="guide-box">
+            <div>
+                <h4>🎯 Objetivos</h4>
+                <p>Gestiona metas anuales con niveles de prioridad. El sistema calcula el progreso trimestral automáticamente.</p>
+            </div>
+            <div>
+                <h4>📁 Documentación</h4>
+                <p>Vincula evidencias y procedimientos de Excel/Drive. Mantén el control de versiones (v1, v2) en cada ítem.</p>
+            </div>
+            <div>
+                <h4>⚙️ Operativa</h4>
+                <p>Usa "Estado" para rotar entre Pendiente, Proceso y Completado. Los datos se guardan localmente para máxima privacidad.</p>
+            </div>
         </div>
-        <p style="text-align:center; font-size:9px; color:#475569; margin-top:30px">SISTEMA PERSONALIZADO POR RAMÓN MORILLO</p>
+
+        <footer>Diseño de Sistema por Ramón Morillo • 2026</footer>
     </div>
+
     <script>
-        let db = JSON.parse(localStorage.getItem('yl_v4')) || { 1: [], 2: [], 3: [], 4: [] };
+        let db = JSON.parse(localStorage.getItem('yl_pro_final')) || { 1: [], 2: [], 3: [], 4: [] };
+        
+        function getPriorityColor(p) {
+            if(p === 'Alta') return '#ef4444';
+            if(p === 'Media') return '#f59e0b';
+            return '#3b82f6';
+        }
+
         function render() {
             const g = document.getElementById('main-grid'); g.innerHTML = '';
-            localStorage.setItem('yl_v4', JSON.stringify(db));
+            localStorage.setItem('yl_pro_final', JSON.stringify(db));
+
             for (let i = 1; i <= 4; i++) {
+                const total = db[i].length;
+                const done = db[i].filter(item => item.s === 2).length;
+                const progress = total > 0 ? (done / total) * 100 : 0;
+
                 const items = db[i].map((item, idx) => `
-                    <div class="item s${item.s}">
-                        <span class="item-t">${item.t}</span>
-                        <div class="item-m">📅 ${item.d || 'S/F'} ${item.l ? ` | <a href="${item.l}" target="_blank" style="color:var(--accent)">📎 DOC v.${item.v || '1'}</a>` : ''}</div>
-                        <button class="btn-s" onclick="st(${i},${idx})">🔄 Estado</button>
-                        <button class="btn-s" style="color:#ef4444" onclick="dl(${i},${idx})">×</button>
+                    <div class="item ${item.s === 2 ? 'status-done' : ''}">
+                        <div style="display:flex; align-items:flex-start;">
+                            <span class="priority-dot" style="background:${getPriorityColor(item.p)}"></span>
+                            <span class="item-t" onclick="st(${i},${idx})">${item.t}</span>
+                        </div>
+                        <div class="item-m">
+                            <span class="tag">📅 ${item.d || 'S/F'}</span>
+                            ${item.l ? `<a href="${item.l}" target="_blank" style="color:var(--accent); text-decoration:none;" class="tag font-bold">📎 DOC v.${item.v || '1'}</a>` : ''}
+                        </div>
+                        <div class="controls">
+                            <button class="btn-action" onclick="st(${i},${idx})">🔄 Estado</button>
+                            <button class="btn-action" style="margin-left:auto; color:#451a1a" onclick="dl(${i},${idx})">Eliminar</button>
+                        </div>
                     </div>`).join('');
-                g.innerHTML += `<div class="q-card"><span class="q-title">Q${i} · Trimestre</span><div style="flex-grow:1">${items || '<p style="font-size:10px;color:#334155;text-align:center">Vacío</p>'}</div><button class="btn-add" onclick="ad(${i})">+ Nuevo Registro</button></div>`;
+
+                g.innerHTML += `
+                    <div class="q-card">
+                        <div class="q-header">
+                            <span class="q-name">Trimestre 0${i}</span>
+                            <span style="font-size:10px; font-weight:bold; color:var(--accent)">${Math.round(progress)}%</span>
+                        </div>
+                        <div class="progress-container"><div class="progress-bar" style="width:${progress}%"></div></div>
+                        <div style="flex-grow:1">${items || '<p style="font-size:11px; color:#334155; text-align:center; margin-top:20px;">No hay ítems programados</p>'}</div>
+                        <button class="btn-add" onclick="ad(${i})">Añadir Ítem</button>
+                    </div>`;
             }
         }
+
         function ad(q) {
-            const t = prompt("Nombre del Objetivo o Documento:"); if (!t) return;
-            const d = prompt("Fecha límite:");
-            const l = prompt("Enlace al documento:");
-            const v = l ? prompt("Versión:") : "";
-            db[q].push({ t, d, l, v, s: 0 }); render();
+            const t = prompt("¿Qué quieres lograr?"); if (!t) return;
+            const p = prompt("Prioridad (Alta, Media, Baja):", "Media");
+            const d = prompt("Fecha/Plazo:");
+            const l = prompt("Link a documento (opcional):");
+            const v = l ? prompt("Versión del archivo (ej: 1.0):") : "";
+            db[q].push({ t, p: p || 'Media', d, l, v, s: 0 }); render();
         }
+
         function st(q, i) { db[q][i].s = (db[q][i].s + 1) % 3; render(); }
-        function dl(q, i) { if(confirm("¿Borrar?")) { db[q].splice(i, 1); render(); } }
+        function dl(q, i) { if(confirm("¿Eliminar?")) { db[q].splice(i, 1); render(); } }
         function exportData() {
             const b = new Blob([JSON.stringify(db)], {type:'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'backup.json'; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'yearloop-pro-backup.json'; a.click();
         }
+
         render();
     </script>
 </body>
